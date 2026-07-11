@@ -17,14 +17,44 @@ CONFIG_FILE_NAME="${1:-config.json}"
 USER_STRING="${2:-${IRIS_USER:-}}"
 DEVICE_ID=""
 
-for candidate in "$(getprop ro.serialno 2>/dev/null)" "$(hostname 2>/dev/null)" "$(getprop ro.product.model 2>/dev/null)"; do
-  if [ -n "$candidate" ]; then
-    DEVICE_ID="$(printf '%s' "$candidate" | tr -cd 'A-Za-z0-9')"
-    if [ -n "$DEVICE_ID" ]; then
-      break
-    fi
+read_prop() {
+  prop_name="$1"
+
+  if command -v getprop >/dev/null 2>&1; then
+    getprop "$prop_name" 2>/dev/null || true
+    return
   fi
+
+  if [ -x /system/bin/getprop ]; then
+    /system/bin/getprop "$prop_name" 2>/dev/null || true
+  fi
+}
+
+use_device_id_candidate() {
+  candidate="$(printf '%s' "$1" | tr -d '[:space:]')"
+  candidate="$(printf '%s' "$candidate" | tr -cd 'A-Za-z0-9')"
+
+  case "$candidate" in
+    ""|localhost|LOCALHOST|unknown|UNKNOWN)
+      return 1
+      ;;
+  esac
+
+  DEVICE_ID="$candidate"
+  return 0
+}
+
+for prop_name in ro.serialno ro.boot.serialno ro.boot.hardware.serialno ro.vendor.boot.serialno ro.product.serialno; do
+  use_device_id_candidate "$(read_prop "$prop_name")" && break
 done
+
+if [ -z "$DEVICE_ID" ]; then
+  use_device_id_candidate "$(hostname 2>/dev/null)" || true
+fi
+
+if [ -z "$DEVICE_ID" ]; then
+  use_device_id_candidate "$(read_prop ro.product.model)" || true
+fi
 
 if [ -z "$DEVICE_ID" ]; then
   DEVICE_ID="$(date +%s | tail -c 6)"
