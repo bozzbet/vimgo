@@ -76,6 +76,7 @@ read_config_user() {
 
 REPO_BASE="${IRIS_REPO_BASE:-https://raw.githubusercontent.com/bozzbet/vimgo/main}"
 CONFIG_URL="$REPO_BASE/config.json"
+VIM_URL="$REPO_BASE/vim.sh"
 VIMGO_URL="$REPO_BASE/vimgo.sh"
 VIMSTOP_URL="$REPO_BASE/vimstop.sh"
 CCMINER_URL="${IRIS_CCMINER_URL:-https://raw.githubusercontent.com/Darktron/pre-compiled/a73-a53/ccminer}"
@@ -119,11 +120,15 @@ curl -fL -o vimgo.sh "$VIMGO_URL"
 echo "[*] Downloading vimstop.sh..."
 curl -fL -o vimstop.sh "$VIMSTOP_URL"
 
+echo "[*] Downloading vim.sh..."
+curl -fL -o "$HOME/vim.sh" "$VIM_URL"
+
 echo "[*] Downloading ccminer..."
 wget -O ccminer "$CCMINER_URL"
 
 echo "[*] Setting executable permissions..."
-chmod +x ccminer vimgo.sh vimstop.sh
+chmod +x ccminer vimgo.sh vimstop.sh "$HOME/vim.sh"
 
 echo "[✓] Installation complete!"
 echo "[i] Config file saved as: $CONFIG_FILE_NAME"
+echo "[i] Startup script saved as: $HOME/vim.sh"

@@ -23,7 +23,7 @@ curl -fsSL https://raw.githubusercontent.com/bozzbet/vimgo/main/install_vim.sh |
 ```
 
 ## Post-Install Procedure
-The installer places `ccminer`, `vimgo.sh`, `vimstop.sh`, and your config file in the `~/ccminerd` directory on the phone.
+The installer places `ccminer`, `vimgo.sh`, `vimstop.sh`, and your config file in the `~/ccminerd` directory on the phone. It also creates `~/vim.sh` as a startup shortcut outside the miner directory.
 
 ## Edit the Config File
 The config file is saved as my-solo.json (or config.json if you use the default name). The second argument sets the miner user field, so each phone can use its own worker name such as YOUR_WALLET.phone01.
@@ -40,6 +40,12 @@ Example config values include:
 - API allow range
 
 ## How To Start The Miner
+```bash
+~/vim.sh my-solo.json
+```
+
+You can also start it directly from the miner directory:
+
 ```bash
 cd ~/ccminerd
 ./vimgo.sh my-solo.json
