@@ -53,7 +53,7 @@ if [ -z "$DEVICE_ID" ]; then
 fi
 
 if [ -z "$DEVICE_ID" ]; then
-  DEVICE_ID="$(date +%s%3N)"
+  DEVICE_ID="$(date +%H%M%S%3N)"
 fi
 
 update_config_user() {
