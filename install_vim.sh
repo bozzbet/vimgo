@@ -15,24 +15,30 @@ BASE_DIR="${IRIS_BASE_DIR:-$HOME/ccminerd}"
 LOG_DIR="$BASE_DIR/log"
 CONFIG_FILE_NAME="${1:-config.json}"
 USER_STRING="${2:-${IRIS_USER:-}}"
+DEVICE_ID=""
 
-if [ -z "$USER_STRING" ]; then
-  DEVICE_ID=""
-  for candidate in "$(getprop ro.serialno 2>/dev/null)" "$(hostname 2>/dev/null)" "$(getprop ro.product.model 2>/dev/null)"; do
-    if [ -n "$candidate" ]; then
-      DEVICE_ID="$(printf '%s' "$candidate" | tr -cd 'A-Za-z0-9')"
-      if [ -n "$DEVICE_ID" ]; then
-        break
-      fi
+for candidate in "$(getprop ro.serialno 2>/dev/null)" "$(hostname 2>/dev/null)" "$(getprop ro.product.model 2>/dev/null)"; do
+  if [ -n "$candidate" ]; then
+    DEVICE_ID="$(printf '%s' "$candidate" | tr -cd 'A-Za-z0-9')"
+    if [ -n "$DEVICE_ID" ]; then
+      break
     fi
-  done
-
-  if [ -z "$DEVICE_ID" ]; then
-    DEVICE_ID="$(date +%s | tail -c 6)"
   fi
+done
 
-  USER_STRING="${IRIS_WALLET:-YOUR_WALLET}.iVim-$DEVICE_ID"
+if [ -z "$DEVICE_ID" ]; then
+  DEVICE_ID="$(date +%s | tail -c 6)"
 fi
+
+update_config_user() {
+  if command -v jq >/dev/null 2>&1; then
+    tmp_config="$(mktemp)"
+    jq --arg user "$USER_STRING" '.user = $user' "$CONFIG_FILE_NAME" > "$tmp_config"
+    mv "$tmp_config" "$CONFIG_FILE_NAME"
+  else
+    sed -i -E "s#\"user\"[[:space:]]*:[[:space:]]*\"[^\"]*\"#\"user\": \"$USER_STRING\"#" "$CONFIG_FILE_NAME"
+  fi
+}
 
 REPO_BASE="${IRIS_REPO_BASE:-https://raw.githubusercontent.com/bozzbet/vimgo/main}"
 CONFIG_URL="$REPO_BASE/config.json"
@@ -51,8 +57,14 @@ cd "$BASE_DIR"
 echo "[*] Downloading $CONFIG_FILE_NAME..."
 curl -fL -o "$CONFIG_FILE_NAME" "$CONFIG_URL"
 
+if [ -z "$USER_STRING" ]; then
+  CONFIG_USER="$(jq -r '.user // empty' "$CONFIG_FILE_NAME" 2>/dev/null || true)"
+  CONFIG_WALLET="${CONFIG_USER%%.*}"
+  USER_STRING="${IRIS_WALLET:-${CONFIG_WALLET:-YOUR_WALLET}}.iVim-$DEVICE_ID"
+fi
+
 if [ -n "$USER_STRING" ]; then
-  sed -i -E "s#\"user\": \".*\"#\"user\": \"$USER_STRING\"#" "$CONFIG_FILE_NAME"
+  update_config_user
   echo "[i] Updated user field to: $USER_STRING"
 fi
 
