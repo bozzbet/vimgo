@@ -44,7 +44,7 @@ use_device_id_candidate() {
   return 0
 }
 
-for prop_name in ro.serialno ro.boot.serialno ro.boot.hardware.serialno ro.vendor.boot.serialno ro.product.serialno; do
+for prop_name in ro.boot.adb_serialno ro.serialno ro.boot.serialno ro.boot.hardware.serialno ro.vendor.boot.serialno ro.product.serialno; do
   use_device_id_candidate "$(read_prop "$prop_name")" && break
 done
 
