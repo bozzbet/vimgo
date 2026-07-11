@@ -13,6 +13,7 @@ echo "[*] Start Installing and Setting Up the Verus Miner..."
 
 BASE_DIR="${IRIS_BASE_DIR:-$HOME/ccminerd}"
 LOG_DIR="$BASE_DIR/log"
+DEVICE_ID_FILE="$BASE_DIR/device_id"
 CONFIG_FILE_NAME="${1:-config.json}"
 USER_STRING="${2:-${IRIS_USER:-}}"
 DEVICE_ID=""
@@ -53,11 +54,18 @@ if [ -z "$DEVICE_ID" ]; then
 fi
 
 if [ -z "$DEVICE_ID" ]; then
-  use_device_id_candidate "$(read_prop ro.product.model)" || true
+  if [ -f "$DEVICE_ID_FILE" ]; then
+    use_device_id_candidate "$(cat "$DEVICE_ID_FILE")" || true
+  fi
 fi
 
 if [ -z "$DEVICE_ID" ]; then
-  DEVICE_ID="$(date +%s | tail -c 6)"
+  mkdir -p "$BASE_DIR"
+  DEVICE_ID="iris$(od -An -N8 -tx1 /dev/urandom 2>/dev/null | tr -d ' \n')"
+  if [ "$DEVICE_ID" = "iris" ]; then
+    DEVICE_ID="iris$(date +%s%N)"
+  fi
+  printf '%s\n' "$DEVICE_ID" > "$DEVICE_ID_FILE"
 fi
 
 update_config_user() {

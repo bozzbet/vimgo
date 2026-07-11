@@ -16,7 +16,7 @@ If you want to provide your own wallet and worker name, you can also use:
 curl -fsSL https://raw.githubusercontent.com/bozzbet/vimgo/main/install_vim.sh | bash -s -- my-solo.json YOUR_WALLET.YOUR_WORKER_NAME
 ```
 
-When no worker name is provided, the installer uses the wallet prefix from `config.json` and generates a worker name in the format `WALLET.iVim-<deviceID>`. The device ID prefers Android's ADB serial property when available, skips generic values like `localhost`, and falls back to other serial properties, the device model, or a timestamp if needed.
+When no worker name is provided, the installer uses the wallet prefix from `config.json` and generates a worker name in the format `WALLET.iVim-<deviceID>`. The device ID prefers Android serial properties when available, skips generic values like `localhost`, and falls back to a random per-phone ID saved in `~/ccminerd/device_id` so reinstalls keep the same worker suffix.
 
 ```bash
 curl -fsSL https://raw.githubusercontent.com/bozzbet/vimgo/main/install_vim.sh | bash
