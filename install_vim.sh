@@ -40,6 +40,14 @@ update_config_user() {
   fi
 }
 
+read_config_user() {
+  if command -v jq >/dev/null 2>&1; then
+    jq -r '.user // empty' "$CONFIG_FILE_NAME" 2>/dev/null || true
+  else
+    sed -n -E 's#.*"user"[[:space:]]*:[[:space:]]*"([^"]*)".*#\1#p' "$CONFIG_FILE_NAME" | head -n 1
+  fi
+}
+
 REPO_BASE="${IRIS_REPO_BASE:-https://raw.githubusercontent.com/bozzbet/vimgo/main}"
 CONFIG_URL="$REPO_BASE/config.json"
 VIMGO_URL="$REPO_BASE/vimgo.sh"
@@ -57,15 +65,26 @@ cd "$BASE_DIR"
 echo "[*] Downloading $CONFIG_FILE_NAME..."
 curl -fL -o "$CONFIG_FILE_NAME" "$CONFIG_URL"
 
+CONFIG_USER="$(read_config_user)"
+
 if [ -z "$USER_STRING" ]; then
-  CONFIG_USER="$(jq -r '.user // empty' "$CONFIG_FILE_NAME" 2>/dev/null || true)"
   CONFIG_WALLET="${CONFIG_USER%%.*}"
   USER_STRING="${IRIS_WALLET:-${CONFIG_WALLET:-YOUR_WALLET}}.iVim-$DEVICE_ID"
 fi
 
 if [ -n "$USER_STRING" ]; then
+  echo "[i] Device ID: $DEVICE_ID"
+  echo "[i] Original config user: ${CONFIG_USER:-none}"
   update_config_user
-  echo "[i] Updated user field to: $USER_STRING"
+  UPDATED_CONFIG_USER="$(read_config_user)"
+
+  if [ "$UPDATED_CONFIG_USER" != "$USER_STRING" ]; then
+    echo "[!] Failed to update config user. Expected: $USER_STRING" >&2
+    echo "[!] Actual: ${UPDATED_CONFIG_USER:-none}" >&2
+    exit 1
+  fi
+
+  echo "[i] Updated config user: $UPDATED_CONFIG_USER"
 fi
 
 echo "[*] Downloading vimgo.sh..."
