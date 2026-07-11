@@ -1,0 +1,18 @@
+{
+  "pools":[
+    {
+      "name": "SOLO-US-VIM",
+      "url": "stratum+tcp://10.0.0.88:9999",
+      "timeout": 90,
+      "time-limit": 120,
+      "disabled": 0
+    }
+  ],
+  "user": "RDJxBSZbRUoNxAcTKrBo6nmUnW2Hgn8pSu.vIm-00",
+  "algo": "verus",
+  "threads": 8,
+  "cpu-priority": 1,
+  "retry-pause": 15,
+  "api-allow": "10.0.0.0/24",
+  "api-bind": "0.0.0.0:4068"
+}
