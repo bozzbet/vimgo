@@ -16,6 +16,18 @@ If you want to provide your own wallet and worker name, you can also use:
 curl -fsSL https://raw.githubusercontent.com/bozzbet/vimgo/main/install_vim.sh | bash -s -- my-solo.json YOUR_WALLET.YOUR_WORKER_NAME
 ```
 
+To install the miner and start it immediately after the install finishes, use:
+
+```bash
+curl -fsSL https://raw.githubusercontent.com/bozzbet/vimgo/main/install_vim.sh | bash -s -- my-solo.json YOUR_WALLET.YOUR_WORKER_NAME && ~/vim.sh my-solo.json
+```
+
+To install with the default `config.json` and start it immediately, use:
+
+```bash
+curl -fsSL https://raw.githubusercontent.com/bozzbet/vimgo/main/install_vim.sh | bash && ~/vim.sh config.json
+```
+
 When no worker name is provided, the installer uses the wallet prefix from `config.json` and generates a worker name in the format `WALLET.iVim-<deviceID>`. The device ID prefers Android serial properties when available, skips generic values like `localhost`, and falls back to the current time in `HHMMSSmmm` format.
 
 ```bash
