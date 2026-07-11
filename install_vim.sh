@@ -12,7 +12,6 @@ apt install -y wget curl libjansson termux-api nano jq
 echo "[*] Start Installing and Setting Up the Verus Miner..."
 
 BASE_DIR="${IRIS_BASE_DIR:-$HOME/ccminerd}"
-LOG_DIR="$BASE_DIR/log"
 CONFIG_FILE_NAME="${1:-config.json}"
 USER_STRING="${2:-${IRIS_USER:-}}"
 DEVICE_ID=""
@@ -83,9 +82,6 @@ CCMINER_URL="${IRIS_CCMINER_URL:-https://raw.githubusercontent.com/Darktron/pre-
 
 echo "[*] Creating ccminerd directory..."
 mkdir -p "$BASE_DIR"
-
-echo "[*] Creating log directory..."
-mkdir -p "$LOG_DIR"
 
 cd "$BASE_DIR"
 
