@@ -4,7 +4,6 @@
       "name": "SOLO-US-VIM",
       "url": "stratum+tcp://10.0.0.88:9999",
       "timeout": 90,
-      "time-limit": 120,
       "disabled": 0
     }
   ],
