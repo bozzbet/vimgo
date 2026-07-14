@@ -6,7 +6,8 @@ export DEBIAN_FRONTEND=noninteractive
 
 echo "[*] Start Installing and Setting Up the Raspberry Pi Verus Miner..."
 
-BASE_DIR="${IRIS_BASE_DIR:-$HOME/ccminerd}"
+VRSC_DIR="${IRIS_VRSC_DIR:-$HOME/vrsc}"
+BASE_DIR="${IRIS_BASE_DIR:-$VRSC_DIR/ccminerd}"
 CONFIG_FILE_NAME="${1:-config.json}"
 USER_STRING="${2:-${IRIS_USER:-}}"
 REPO_BASE="${IRIS_REPO_BASE:-https://raw.githubusercontent.com/bozzbet/vimgo/main}"
@@ -86,12 +87,13 @@ read_config_user() {
 }
 
 write_pi_scripts() {
-  cat > "$BASE_DIR/pivim.sh" <<'SCRIPT'
+  cat > "$BASE_DIR/start.sh" <<'SCRIPT'
 #!/usr/bin/env bash
 
 set -euo pipefail
 
-CCMINER_DIR="${IRIS_BASE_DIR:-$HOME/ccminerd}"
+VRSC_DIR="${IRIS_VRSC_DIR:-$HOME/vrsc}"
+CCMINER_DIR="${IRIS_BASE_DIR:-$VRSC_DIR/ccminerd}"
 CONFIG_FILE_NAME="${1:-}"
 
 resolve_config_file() {
@@ -131,7 +133,7 @@ CONFIG_FILE="$(resolve_config_file)" || {
 exec ./ccminer -c "$CONFIG_FILE"
 SCRIPT
 
-  cat > "$BASE_DIR/pivimstop.sh" <<'SCRIPT'
+  cat > "$BASE_DIR/stop.sh" <<'SCRIPT'
 #!/usr/bin/env bash
 
 set -euo pipefail
@@ -155,14 +157,26 @@ pkill -KILL -x ccminer
 echo "ccminer force stopped."
 SCRIPT
 
-  cat > "$HOME/pivim.sh" <<'SCRIPT'
+  cat > "$VRSC_DIR/start.sh" <<'SCRIPT'
 #!/usr/bin/env bash
 
 set -euo pipefail
 
-CCMINER_DIR="${IRIS_BASE_DIR:-$HOME/ccminerd}"
+VRSC_DIR="${IRIS_VRSC_DIR:-$HOME/vrsc}"
+CCMINER_DIR="${IRIS_BASE_DIR:-$VRSC_DIR/ccminerd}"
 
-exec "$CCMINER_DIR/pivim.sh" "$@"
+exec "$CCMINER_DIR/start.sh" "$@"
+SCRIPT
+
+  cat > "$VRSC_DIR/stop.sh" <<'SCRIPT'
+#!/usr/bin/env bash
+
+set -euo pipefail
+
+VRSC_DIR="${IRIS_VRSC_DIR:-$HOME/vrsc}"
+CCMINER_DIR="${IRIS_BASE_DIR:-$VRSC_DIR/ccminerd}"
+
+exec "$CCMINER_DIR/stop.sh" "$@"
 SCRIPT
 }
 
@@ -183,7 +197,14 @@ run_apt
 
 detect_device_id
 
-echo "[*] Creating ccminerd directory..."
+if [ -d "$VRSC_DIR" ]; then
+  echo "[i] vrsc directory exists: $VRSC_DIR"
+else
+  echo "[*] Creating vrsc directory: $VRSC_DIR"
+  mkdir -p "$VRSC_DIR"
+fi
+
+echo "[*] Creating ccminerd directory inside vrsc..."
 mkdir -p "$BASE_DIR"
 cd "$BASE_DIR"
 
@@ -219,10 +240,12 @@ echo "[*] Writing Raspberry Pi startup scripts..."
 write_pi_scripts
 
 echo "[*] Setting executable permissions..."
-chmod +x ccminer "$BASE_DIR/pivim.sh" "$BASE_DIR/pivimstop.sh" "$HOME/pivim.sh"
+chmod +x ccminer "$BASE_DIR/start.sh" "$BASE_DIR/stop.sh" "$VRSC_DIR/start.sh" "$VRSC_DIR/stop.sh"
 
 echo "[✓] Installation complete!"
 echo "[i] Config file saved as: $BASE_DIR/$CONFIG_FILE_NAME"
-echo "[i] Startup script saved as: $HOME/pivim.sh"
-echo "[i] Start miner with: ~/pivim.sh $CONFIG_FILE_NAME"
-echo "[i] Stop miner with: ~/ccminerd/pivimstop.sh"
+echo "[i] Miner files saved in: $BASE_DIR"
+echo "[i] Startup script saved as: $VRSC_DIR/start.sh"
+echo "[i] Stop script saved as: $VRSC_DIR/stop.sh"
+echo "[i] Start miner with: $VRSC_DIR/start.sh $CONFIG_FILE_NAME"
+echo "[i] Stop miner with: $VRSC_DIR/stop.sh"
